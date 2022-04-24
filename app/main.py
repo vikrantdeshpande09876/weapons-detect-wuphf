@@ -23,11 +23,10 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 
-model = torch.hub.load("ultralytics/yolov5", "custom", path = 'best.pt', force_reload=True)
+model = torch.hub.load("ultralytics/yolov5", "custom", path = 'best.pt')
 
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route(f'{base_url}', methods=['GET', 'POST'])
 def home():
@@ -76,7 +75,6 @@ def uploaded_file(filename):
             else:
                 return
         confidences = list(results.pandas().xyxy[0]['confidence'])
-        # confidences: rounding and changing to percent, putting in function
         format_confidences = []
         for percent in confidences:
             format_confidences.append(str(round(percent*100)) + '%')
@@ -87,12 +85,10 @@ def uploaded_file(filename):
         labels = set(labels)
         labels = [emotion.capitalize() for emotion in labels]
         labels = and_syntax(labels)
-        return render_template('results.html', confidences=format_confidences, labels=labels,
-                               old_filename=filename,
-                               filename=filename)
+        return render_template('results.html', confidences=format_confidences, labels=labels, old_filename=filename, filename=filename)
     else:
         found = False
-        return render_template('results.html', labels='No Emotion', old_filename=filename, filename=filename)
+        return render_template('results.html', labels='No Detection', old_filename=filename, filename=filename)
 
 
 @app.route(f'{base_url}/uploads/<path:filename>')
@@ -107,7 +103,7 @@ def files(filename):
 
 if __name__ == '__main__':
     # IMPORTANT: change url to the site where you are editing this file.
-    website_url = 'url'
+    website_url = 'localhost'
     
     print(f'Try to open\n\n    https://{website_url}' + base_url + '\n\n')
-    app.run(host = '0.0.0.0', port=port, debug=True)
+    app.run(host = '0.0.0.0', port=port, debug=False)
